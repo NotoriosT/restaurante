@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -18,21 +19,18 @@ public class MesaController {
     private static final Logger logger = Logger.getLogger(MesaController.class.getName());
 
     @Autowired
-    private MesaRepository mesaRepository;
-
-    @Autowired
     private MesaService mesaService;
-
+    @Autowired
+    private MesaRepository mesaRepository;
     @GetMapping
     public List<Mesa> getAllMesas() {
-        logUserRoles();
-        return mesaRepository.findAll();
+       return  mesaRepository.findAll();
     }
 
     @PostMapping
-    public Mesa createMesa(@RequestBody Mesa mesa) {
+    public Mesa createMesa(@Valid @RequestBody Mesa mesa) {
         logUserRoles();
-        return mesaRepository.save(mesa);
+        return mesaService.createMesa(mesa);
     }
 
     @GetMapping("/{id}/total-gasto")
