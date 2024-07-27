@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -20,7 +21,7 @@ public class ColaboradorController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping
-    public ResponseEntity<Colaborador> createColaborador(@RequestBody Colaborador colaborador) {
+    public ResponseEntity<Colaborador> createColaborador(@Valid @RequestBody Colaborador colaborador) {
         // Criptografar a senha antes de salvar
         colaborador.setSenha(passwordEncoder.encode(colaborador.getSenha()));
         Colaborador newColaborador = colaboradorService.saveColaborador(colaborador);
