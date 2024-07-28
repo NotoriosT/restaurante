@@ -30,10 +30,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAnyRole("GARCOM", "ADMIN")
+                        .requestMatchers( "/api/pedidos/**").hasAnyRole("GARCOM", "ADMIN", "COZINHA")
                         .requestMatchers(HttpMethod.GET, "/api/produtos").hasAnyRole("GARCOM", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/produtos").hasAnyRole("ADMIN")
-                        .requestMatchers("/api/mesas/**").hasAnyRole("ADMIN")
+                        .requestMatchers("/api/mesas/**").hasAnyRole("ADMIN", "GARCOM")
                         .requestMatchers("/api/**").hasAnyRole("ADMIN")
                         .requestMatchers("/ws/**").permitAll() // Permitir acesso ao endpoint WebSocket
                         .requestMatchers("/**").hasRole("ADMIN")
