@@ -100,10 +100,11 @@ def send_email(subject, body, from_email, to_email, smtp_server, smtp_port, smtp
     msg.attach(part1)
 
     try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.sendmail(from_email, to_email, msg.as_string())
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(from_email, to_email, msg.as_string())
+        server.quit()
         print(f"Email enviado com sucesso para {to_email}")
     except Exception as e:
         print(f"Falha ao enviar email: {e}")
