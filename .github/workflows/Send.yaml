@@ -1,12 +1,6 @@
 name: Send Vulnerability Report
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:  # Permite iniciar o job manualmente
 
 jobs:
@@ -16,9 +10,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Install Python dependencies
-      run: pip install smtplib email
 
     - name: Send Email with Report
       run: python send_email.py
