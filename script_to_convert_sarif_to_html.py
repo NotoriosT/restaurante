@@ -1,61 +1,93 @@
-name: CODEQL
+import json
+import os
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  schedule:
-    - cron: '0 2 * * 1'
+def sarif_to_html(sarif_file, output_html):
+    with open(sarif_file, "r") as file:
+        sarif_data = json.load(file)
+        
+    html_content = """
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f4f4f4;
+            }
+            h1 {
+                color: #333;
+            }
+            h2 {
+                color: #555;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 5px;
+            }
+            p {
+                color: #444;
+            }
+            pre {
+                background-color: #eee;
+                border-left: 3px solid #cc0000;
+                padding: 10px;
+                color: #111;
+            }
+            .vulnerability {
+                background-color: #fff;
+                border: 1px solid #ddd;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Vulnerability Report</h1>
+    """
 
-jobs:
-  analyze:
-    name: Analyze Java
-    runs-on: ubuntu-latest
+    for run in sarif_data.get('runs', []):
+        for result in run.get('results', []):
+            rule_id = result.get('ruleId', 'N/A')
+            message = result.get('message', {}).get('text', 'No message provided')
+            location = result.get('locations', [])[0].get('physicalLocation', {})
+            file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
+            line_number = location.get('region', {}).get('startLine', 'Unknown line')
 
-    permissions:
-      contents: write
-      security-events: write
+            # Obter o snippet de código vulnerável
+            code_snippet = get_code_snippet(file_path, line_number)
+            
+            html_content += f"""
+            <div class="vulnerability">
+                <h2>Vulnerability: {rule_id}</h2>
+                <p><strong>Message:</strong> {message}</p>
+                <p><strong>File:</strong> {file_path}</p>
+                <p><strong>Line:</strong> {line_number}</p>
+                <pre>{code_snippet}</pre>
+            </div>
+            """
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    html_content += "</body></html>"
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+    with open(output_html, "w") as html_file:
+        html_file.write(html_content)
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: java
+def get_code_snippet(file_path, line_number, context_lines=2):
+    """
+    Função para obter o snippet de código ao redor da linha vulnerável.
+    """
+    snippet = []
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+                start_line = max(0, line_number - context_lines - 1)
+                end_line = min(len(lines), line_number + context_lines)
+                snippet = lines[start_line:end_line]
+        else:
+            snippet = ["Código não encontrado: o arquivo não existe."]
+    except Exception as e:
+        snippet = [f"Erro ao ler o arquivo: {e}"]
+    
+    return "".join(snippet)
 
-    - name: Build with Maven
-      run: mvn clean install -DskipTests
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-      with:
-        output: ${{ github.workspace }}/results/java.sarif
-
-    - name: Install Python Dependencies
-      run: pip install sarif-om
-
-    - name: Convert SARIF to Detailed HTML Report
-      run: |
-        python script_to_convert_sarif_to_html.py
-
-    - name: Send Email with Report
-      run: |
-        python send_email.py
-      env:
-        SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-        SMTP_SERVER: "live.smtp.mailtrap.io"
-        SMTP_PORT: 587
-        EMAIL_FROM: "mailtrap@demomailtrap.com"
-        EMAIL_TO: "tonon2002@gmail.com"
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_REF: ${{ github.ref }}
+# Altere o caminho para apontar diretamente para o arquivo SARIF
+sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
