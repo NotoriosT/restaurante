@@ -114,49 +114,57 @@ def sarif_to_html(sarif_file, output_html):
     """
 
     for run in sarif_data.get('runs', []):
+        tool_info = run.get('tool', {}).get('driver', {})
+        tool_name = tool_info.get('name', 'N/A')
+        tool_version = tool_info.get('version', 'N/A')
+        
         for result in run.get('results', []):
             rule_id = result.get('ruleId', 'N/A')
             message = result.get('message', {}).get('text', 'No message provided')
-            location = result.get('locations', [])[0].get('physicalLocation', {})
-            file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
-            line_number = location.get('region', {}).get('startLine', 'Unknown line')
+            locations = [{
+                "file_path": loc.get('physicalLocation', {}).get('artifactLocation', {}).get('uri', 'Unknown file'),
+                "line_number": loc.get('physicalLocation', {}).get('region', {}).get('startLine', 'Unknown line')
+            } for loc in result.get('locations', [])]
+            severity = result.get('properties', {}).get('securitySeverityLevel', 'low')
+            additional_properties = result.get('properties', {})
             
-            # Ajuste manual para mapear severidade corretamente
-            severity = result.get('properties', {}).get('securitySeverityLevel', 'low').lower()
-                
-            # Captura descrição da regra e recomendações
-            rules = run.get('tool', {}).get('driver', {}).get('rules', [])
-            matching_rule = next((rule for rule in rules if rule.get('id') == rule_id), None)
+            # Tentar encontrar a regra correspondente
+            matching_rule = next((rule for rule in tool_info.get('rules', []) if rule.get('id') == rule_id), None)
             if matching_rule:
-                rule_desc = matching_rule.get('fullDescription', {}).get('text', 'No description available')
-                recommendation = matching_rule.get('properties', {}).get('securityStandards', [])
-                references = matching_rule.get('properties', {}).get('references', [])
-                cwe_id = matching_rule.get('properties', {}).get('cwe', 'N/A')
-                possible_fixes = matching_rule.get('properties', {}).get('fixes', [])
+                rule_name = matching_rule.get('name', 'N/A')
+                short_description = matching_rule.get('shortDescription', {}).get('text', 'N/A')
+                full_description = matching_rule.get('fullDescription', {}).get('text', 'N/A')
+                help_uri = matching_rule.get('helpUri', 'N/A')
+                rule_properties = matching_rule.get('properties', {})
             else:
-                rule_desc = 'No description available'
-                recommendation = []
-                references = []
-                cwe_id = 'N/A'
-                possible_fixes = []
+                rule_name = "N/A"
+                short_description = "N/A"
+                full_description = "N/A"
+                help_uri = "N/A"
+                rule_properties = {}
 
             # Gera o HTML para a vulnerabilidade
-            code_snippet = get_code_snippet(file_path, line_number)
-            html_content += f"""
-            <div class="vulnerability {severity}">
-                <h2>Vulnerability: {rule_id}</h2>
-                <p><strong>Severity:</strong> {severity.capitalize()}</p>
-                <p><strong>Message:</strong> {message}</p>
-                <p><strong>Description:</strong> {rule_desc}</p>
-                <p><strong>File:</strong> {file_path}</p>
-                <p><strong>Line:</strong> {line_number}</p>
-                <p><strong>CWE ID:</strong> {cwe_id}</p>
-                <pre>{code_snippet}</pre>
-                <p><strong>Recommendation:</strong> {', '.join(recommendation) if recommendation else 'No recommendation available'}</p>
-                <p><strong>References:</strong> {', '.join(references) if references else 'No references available'}</p>
-                <p><strong>Possible Fixes:</strong> {', '.join(possible_fixes) if possible_fixes else 'No fixes available'}</p>
-            </div>
-            """
+            for location in locations:
+                file_path = location['file_path']
+                line_number = location['line_number']
+                code_snippet = get_code_snippet(file_path, line_number)
+                
+                html_content += f"""
+                <div class="vulnerability {severity}">
+                    <h2>Vulnerability: {rule_id} ({rule_name})</h2>
+                    <p><strong>Tool:</strong> {tool_name} (Version: {tool_version})</p>
+                    <p><strong>Severity:</strong> {severity.capitalize()}</p>
+                    <p><strong>Message:</strong> {message}</p>
+                    <p><strong>Short Description:</strong> {short_description}</p>
+                    <p><strong>Full Description:</strong> {full_description}</p>
+                    <p><strong>File:</strong> {file_path}</p>
+                    <p><strong>Line:</strong> {line_number}</p>
+                    <p><strong>Additional Properties:</strong> {additional_properties}</p>
+                    <p><strong>Rule Properties:</strong> {rule_properties}</p>
+                    <pre>{code_snippet}</pre>
+                    <p><strong>Help URI:</strong> <a href="{help_uri}">See Documentation</a></p>
+                </div>
+                """
 
     html_content += "</body></html>"
 
@@ -182,4 +190,4 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     return "".join(snippet)
 
 if __name__ == "__main__":
-    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
+    sarif_to_html("results/java.sarif", "relatorio_vulnerabilidades_completo.html")
