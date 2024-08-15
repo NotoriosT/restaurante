@@ -1,21 +1,20 @@
-import json  # Adicione esta linha para importar o módulo json
-from sarif_om import SarifLog
+import json
 
 def sarif_to_html(sarif_file, output_html):
     with open(sarif_file, "r") as file:
-        sarif_data = json.load(file)  # Agora o json.load() funcionará corretamente
-        sarif_log = SarifLog.from_dict(sarif_data)
+        sarif_data = json.load(file)
         
     html_content = "<html><body><h1>Vulnerability Report</h1>"
 
-    for run in sarif_log.runs:
-        for result in run.results:
-            rule_id = result.rule_id
-            message = result.message.text
-            location = result.locations[0].physical_location
-            file_path = location.artifact_location.uri
-            line_number = location.region.start_line
+    for run in sarif_data.get('runs', []):
+        for result in run.get('results', []):
+            rule_id = result.get('ruleId', 'N/A')
+            message = result.get('message', {}).get('text', 'No message provided')
+            location = result.get('locations', [])[0].get('physicalLocation', {})
+            file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
+            line_number = location.get('region', {}).get('startLine', 'Unknown line')
 
+            # Aqui, você pode implementar uma função que obtém o snippet de código, se desejar
             code_snippet = get_code_snippet(file_path, line_number)
             
             html_content += f"<h2>Vulnerability: {rule_id}</h2>"
@@ -29,6 +28,11 @@ def sarif_to_html(sarif_file, output_html):
 
     with open(output_html, "w") as html_file:
         html_file.write(html_content)
+
+def get_code_snippet(file_path, line_number):
+    # Implementar a lógica para ler o arquivo e pegar o snippet de código na linha especificada
+    # Por enquanto, retornamos uma string vazia como exemplo
+    return "Código de exemplo na linha " + str(line_number)
 
 # Altere o caminho para apontar diretamente para o arquivo SARIF
 sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
