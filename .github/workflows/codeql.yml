@@ -56,6 +56,6 @@ jobs:
         SMTP_SERVER: "live.smtp.mailtrap.io"
         SMTP_PORT: 587
         EMAIL_FROM: "mailtrap@demomailtrap.com"
-        EMAIL_TO: "tonon2002@gmail.com"
+        EMAIL_TO:  ${{ secrets.EMAIL }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_REF: ${{ github.ref }}
