@@ -1,7 +1,4 @@
-import json
-import os
-
-def sarif_to_html(sarif_file, output_html):
+def sarif_to_html_adjusted(sarif_file, output_html):
     with open(sarif_file, "r") as file:
         sarif_data = json.load(file)
         
@@ -124,9 +121,11 @@ def sarif_to_html(sarif_file, output_html):
             # Ajuste manual para mapear severidade corretamente
             if 'properties' in result and 'securitySeverityLevel' in result['properties']:
                 severity = result['properties']['securitySeverityLevel'].lower()
+            elif 'level' in result:
+                severity = result['level'].lower()
             else:
                 severity = 'low'  # Default se não encontrado
-                
+            
             # Captura descrição da regra e recomendações
             rules = run.get('tool', {}).get('driver', {}).get('rules', [])
             matching_rule = next((rule for rule in rules if rule.get('id') == rule_id), None)
@@ -181,5 +180,8 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     
     return "".join(snippet)
 
-if __name__ == "__main__":
-    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
+# Rodar a função com o exemplo SARIF fornecido
+output_html = "relatorio_vulnerabilidades_test.html"
+sarif_to_html_adjusted(file_path, output_html)
+
+output_html  # Caminho do HTML gerado para verificação
