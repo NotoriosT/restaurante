@@ -1,31 +1,54 @@
-def sarif_to_html(sarif_file, output_html):
-    with open(sarif_file, "r") as file:
-        sarif_data = json.load(file)
-        sarif_log = SarifLog.from_dict(sarif_data)
-        
-    html_content = "<html><body><h1>Vulnerability Report</h1>"
+name: "CodeQL Analysis for Java with Maven and JDK 17"
 
-    for run in sarif_log.runs:
-        for result in run.results:
-            rule_id = result.rule_id
-            message = result.message.text
-            location = result.locations[0].physical_location
-            file_path = location.artifact_location.uri
-            line_number = location.region.start_line
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 2 * * 1'
 
-            code_snippet = get_code_snippet(file_path, line_number)
-            
-            html_content += f"<h2>Vulnerability: {rule_id}</h2>"
-            html_content += f"<p><strong>Message:</strong> {message}</p>"
-            html_content += f"<p><strong>File:</strong> {file_path}</p>"
-            html_content += f"<p><strong>Line:</strong> {line_number}</p>"
-            html_content += f"<pre>{code_snippet}</pre>"
-            html_content += "<hr>"
+jobs:
+  analyze:
+    name: Analyze Java
+    runs-on: ubuntu-latest
 
-    html_content += "</body></html>"
+    permissions:
+      contents: write
+      security-events: write
 
-    with open(output_html, "w") as html_file:
-        html_file.write(html_content)
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-# Altere o caminho para apontar diretamente para o arquivo SARIF
-sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java
+
+    - name: Build with Maven
+      run: mvn clean install -DskipTests
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        output: ${{ github.workspace }}/results/java.sarif
+
+    - name: Install Python Dependencies
+      run: pip install sarif-om
+
+    - name: Convert SARIF to Detailed HTML Report
+      run: |
+        python script_to_convert_sarif_to_html.py
+
+    - name: Upload HTML Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: html-report
+        path: relatorio_vulnerabilidades.html
