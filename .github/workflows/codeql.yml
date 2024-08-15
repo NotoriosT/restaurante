@@ -47,12 +47,6 @@ jobs:
       run: |
         python script_to_convert_sarif_to_html.py
 
-    - name: Upload HTML Report
-      uses: actions/upload-artifact@v2
-      with:
-        name: html-report
-        path: relatorio_vulnerabilidades.html
-
     - name: Send Email with Report
       run: |
         python send_email.py
@@ -63,3 +57,5 @@ jobs:
         SMTP_PORT: 587
         EMAIL_FROM: "mailtrap@demomailtrap.com"
         EMAIL_TO: "tonon2002@gmail.com"
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_REF: ${{ github.ref }}
