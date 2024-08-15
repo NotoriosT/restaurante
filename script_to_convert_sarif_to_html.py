@@ -121,7 +121,13 @@ def sarif_to_html(sarif_file, output_html):
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
             severity = result.get('properties', {}).get('severity', 'low').lower()
-            rule_desc = run.get('tool', {}).get('driver', {}).get('rules', [{}])[0].get('fullDescription', {}).get('text', '')
+
+            # Verificação para garantir que a regra existe
+            rules = run.get('tool', {}).get('driver', {}).get('rules', [])
+            if len(rules) > 0:
+                rule_desc = rules[0].get('fullDescription', {}).get('text', '')
+            else:
+                rule_desc = 'No description available'
 
             code_snippet = get_code_snippet(file_path, line_number)
             
