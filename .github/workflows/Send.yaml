@@ -1,6 +1,9 @@
 name: Send Vulnerability Report
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:  # Permite iniciar o job manualmente
 
 jobs:
