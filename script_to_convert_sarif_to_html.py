@@ -122,15 +122,21 @@ def sarif_to_html(sarif_file, output_html):
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
             severity = result.get('properties', {}).get('severity', 'low').lower()
 
-            # Verificação para garantir que a regra existe
+            # Captura descrição da regra
             rules = run.get('tool', {}).get('driver', {}).get('rules', [])
             if len(rules) > 0:
                 rule_desc = rules[0].get('fullDescription', {}).get('text', '')
+                recommendation = rules[0].get('properties', {}).get('securityStandards', [])
+                references = rules[0].get('properties', {}).get('references', [])
+                cwe_id = rules[0].get('properties', {}).get('cwe', 'N/A')
             else:
                 rule_desc = 'No description available'
+                recommendation = []
+                references = []
+                cwe_id = 'N/A'
 
+            # Gera o HTML para a vulnerabilidade
             code_snippet = get_code_snippet(file_path, line_number)
-            
             html_content += f"""
             <div class="vulnerability {severity}">
                 <h2>Vulnerability: {rule_id}</h2>
@@ -139,7 +145,10 @@ def sarif_to_html(sarif_file, output_html):
                 <p><strong>Description:</strong> {rule_desc}</p>
                 <p><strong>File:</strong> {file_path}</p>
                 <p><strong>Line:</strong> {line_number}</p>
+                <p><strong>CWE ID:</strong> {cwe_id}</p>
                 <pre>{code_snippet}</pre>
+                <p><strong>Recommendation:</strong> {', '.join(recommendation) if recommendation else 'No recommendation available'}</p>
+                <p><strong>References:</strong> {', '.join(references) if references else 'No references available'}</p>
             </div>
             """
 
