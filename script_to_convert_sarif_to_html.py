@@ -120,15 +120,21 @@ def sarif_to_html(sarif_file, output_html):
             location = result.get('locations', [])[0].get('physicalLocation', {})
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
-            severity = result.get('properties', {}).get('severity', 'low').lower()
-
-            # Captura descrição da regra
+            
+            # Ajuste manual para mapear severidade corretamente
+            if 'properties' in result and 'securitySeverityLevel' in result['properties']:
+                severity = result['properties']['securitySeverityLevel'].lower()
+            else:
+                severity = 'low'  # Default se não encontrado
+                
+            # Captura descrição da regra e recomendações
             rules = run.get('tool', {}).get('driver', {}).get('rules', [])
-            if len(rules) > 0:
-                rule_desc = rules[0].get('fullDescription', {}).get('text', '')
-                recommendation = rules[0].get('properties', {}).get('securityStandards', [])
-                references = rules[0].get('properties', {}).get('references', [])
-                cwe_id = rules[0].get('properties', {}).get('cwe', 'N/A')
+            matching_rule = next((rule for rule in rules if rule.get('id') == rule_id), None)
+            if matching_rule:
+                rule_desc = matching_rule.get('fullDescription', {}).get('text', '')
+                recommendation = matching_rule.get('properties', {}).get('securityStandards', [])
+                references = matching_rule.get('properties', {}).get('references', [])
+                cwe_id = matching_rule.get('properties', {}).get('cwe', 'N/A')
             else:
                 rule_desc = 'No description available'
                 recommendation = []
