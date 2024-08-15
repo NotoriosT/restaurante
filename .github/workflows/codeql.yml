@@ -40,7 +40,10 @@ jobs:
       with:
         output: ${{ github.workspace }}/results/java.sarif
 
-    - name: Convert SARIF to HTML
+    - name: Install Python Dependencies
+      run: pip install sarif-om
+
+    - name: Convert SARIF to Detailed HTML Report
       run: |
         python script_to_convert_sarif_to_html.py
 
