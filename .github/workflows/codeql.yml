@@ -26,21 +26,15 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
+        cache: maven
 
     - name: Build with Maven
       run: mvn clean install -DskipTests
 
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
-      with:
-        output: ${{ github.workspace }}/results/java.sarif
-
-    - name: Convert SARIF to HTML
-      run: |
-        python script_to_convert_sarif_to_html.py
-
-    - name: Upload HTML Report
-      uses: actions/upload-artifact@v2
-      with:
-        name: html-report
-        path: relatorio_vulnerabilidades.html
