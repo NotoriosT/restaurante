@@ -45,8 +45,20 @@ def send_email(subject, body, filename):
         print(f"Falha ao enviar email: {e}")
 
 if __name__ == "__main__":
+    project_name = os.getenv('GITHUB_REPOSITORY').split('/')[1]
+    branch_name = os.getenv('GITHUB_REF').split('/')[-1]
+    
+    email_body = f"""
+    Olá,
+
+    Segue em anexo o relatório detalhado de vulnerabilidades para o projeto {project_name} na branch {branch_name}.
+
+    Atenciosamente,
+    Equipe de Segurança
+    """
+
     send_email(
-        subject="Vulnerability Report",
-        body="Segue em anexo o relatório detalhado de vulnerabilidades.",
+        subject=f"Vulnerability Report for {project_name} on branch {branch_name}",
+        body=email_body,
         filename="relatorio_vulnerabilidades.html"
     )
