@@ -27,6 +27,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java
+
     - name: Build with Maven
       run: mvn clean install -DskipTests
 
