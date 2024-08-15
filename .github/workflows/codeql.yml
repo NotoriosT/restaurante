@@ -1,4 +1,5 @@
 name: CODEQL
+
 on:
   push:
     branches: [ "main" ]
@@ -45,8 +46,20 @@ jobs:
     - name: Convert SARIF to Detailed HTML Report
       run: |
         python script_to_convert_sarif_to_html.py
+
     - name: Upload HTML Report
       uses: actions/upload-artifact@v2
       with:
         name: html-report
         path: relatorio_vulnerabilidades.html
+
+    - name: Send Email with Report
+      run: |
+        python send_email.py
+      env:
+        SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        SMTP_SERVER: "live.smtp.mailtrap.io"
+        SMTP_PORT: 587
+        EMAIL_FROM: "mailtrap@demomailtrap.com"
+        EMAIL_TO: "tonon2002@gmail.com"
