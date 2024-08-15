@@ -2,6 +2,10 @@ import json
 import os
 
 def sarif_to_html(sarif_file, output_html):
+    # Verifica se o caminho é um arquivo válido
+    if not os.path.isfile(sarif_file):
+        raise ValueError(f"O caminho fornecido '{sarif_file}' não é um arquivo válido.")
+
     with open(sarif_file, "r") as file:
         sarif_data = json.load(file)
         
@@ -190,4 +194,5 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     return "".join(snippet)
 
 if __name__ == "__main__":
-    sarif_to_html("results/java.sarif", "relatorio_vulnerabilidades_completo.html")
+    # Certifique-se de fornecer o caminho correto para o arquivo SARIF
+    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades_completo.html")
