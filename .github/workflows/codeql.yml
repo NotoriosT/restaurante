@@ -47,6 +47,12 @@ jobs:
       run: |
         python script_to_convert_sarif_to_html.py
 
+    - name: Upload SARIF Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: java-sarif
+        path: results/java.sarif/java.sarif
+
     - name: Send Email with Report
       run: |
         python send_email.py
