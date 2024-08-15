@@ -1,10 +1,48 @@
 import json
+import os
 
 def sarif_to_html(sarif_file, output_html):
     with open(sarif_file, "r") as file:
         sarif_data = json.load(file)
         
-    html_content = "<html><body><h1>Vulnerability Report</h1>"
+    html_content = """
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f4f4f4;
+            }
+            h1 {
+                color: #333;
+            }
+            h2 {
+                color: #555;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 5px;
+            }
+            p {
+                color: #444;
+            }
+            pre {
+                background-color: #eee;
+                border-left: 3px solid #cc0000;
+                padding: 10px;
+                color: #111;
+            }
+            .vulnerability {
+                background-color: #fff;
+                border: 1px solid #ddd;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Vulnerability Report</h1>
+    """
 
     for run in sarif_data.get('runs', []):
         for result in run.get('results', []):
@@ -14,25 +52,42 @@ def sarif_to_html(sarif_file, output_html):
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
 
-            # Aqui, você pode implementar uma função que obtém o snippet de código, se desejar
+            # Obter o snippet de código vulnerável
             code_snippet = get_code_snippet(file_path, line_number)
             
-            html_content += f"<h2>Vulnerability: {rule_id}</h2>"
-            html_content += f"<p><strong>Message:</strong> {message}</p>"
-            html_content += f"<p><strong>File:</strong> {file_path}</p>"
-            html_content += f"<p><strong>Line:</strong> {line_number}</p>"
-            html_content += f"<pre>{code_snippet}</pre>"
-            html_content += "<hr>"
+            html_content += f"""
+            <div class="vulnerability">
+                <h2>Vulnerability: {rule_id}</h2>
+                <p><strong>Message:</strong> {message}</p>
+                <p><strong>File:</strong> {file_path}</p>
+                <p><strong>Line:</strong> {line_number}</p>
+                <pre>{code_snippet}</pre>
+            </div>
+            """
 
     html_content += "</body></html>"
 
     with open(output_html, "w") as html_file:
         html_file.write(html_content)
 
-def get_code_snippet(file_path, line_number):
-    # Implementar a lógica para ler o arquivo e pegar o snippet de código na linha especificada
-    # Por enquanto, retornamos uma string vazia como exemplo
-    return "Código de exemplo na linha " + str(line_number)
+def get_code_snippet(file_path, line_number, context_lines=2):
+    """
+    Função para obter o snippet de código ao redor da linha vulnerável.
+    """
+    snippet = []
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+                start_line = max(0, line_number - context_lines - 1)
+                end_line = min(len(lines), line_number + context_lines)
+                snippet = lines[start_line:end_line]
+        else:
+            snippet = ["Código não encontrado: o arquivo não existe."]
+    except Exception as e:
+        snippet = [f"Erro ao ler o arquivo: {e}"]
+    
+    return "".join(snippet)
 
 # Altere o caminho para apontar diretamente para o arquivo SARIF
 sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
