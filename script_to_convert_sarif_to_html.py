@@ -1,4 +1,7 @@
-def sarif_to_html_adjusted(sarif_file, output_html):
+import json
+import os
+
+def sarif_to_html(sarif_file, output_html):
     with open(sarif_file, "r") as file:
         sarif_data = json.load(file)
         
@@ -118,19 +121,13 @@ def sarif_to_html_adjusted(sarif_file, output_html):
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
             
-            # Ajuste manual para mapear severidade corretamente
-            if 'properties' in result and 'securitySeverityLevel' in result['properties']:
-                severity = result['properties']['securitySeverityLevel'].lower()
-            elif 'level' in result:
-                severity = result['level'].lower()
-            else:
-                severity = 'low'  # Default se não encontrado
-            
-            # Captura descrição da regra e recomendações
-            rules = run.get('tool', {}).get('driver', {}).get('rules', [])
-            matching_rule = next((rule for rule in rules if rule.get('id') == rule_id), None)
+            # Ajuste para garantir que a severidade seja corretamente capturada
+            severity = result.get('properties', {}).get('securitySeverityLevel', 'low').lower()
+
+            # Captura descrição da regra e outros dados relevantes
+            matching_rule = next((rule for rule in run.get('tool', {}).get('driver', {}).get('rules', []) if rule.get('id') == rule_id), None)
             if matching_rule:
-                rule_desc = matching_rule.get('fullDescription', {}).get('text', '')
+                rule_desc = matching_rule.get('fullDescription', {}).get('text', 'No description available')
                 recommendation = matching_rule.get('properties', {}).get('securityStandards', [])
                 references = matching_rule.get('properties', {}).get('references', [])
                 cwe_id = matching_rule.get('properties', {}).get('cwe', 'N/A')
@@ -180,8 +177,6 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     
     return "".join(snippet)
 
-# Rodar a função com o exemplo SARIF fornecido
-output_html = "relatorio_vulnerabilidades_test.html"
-sarif_to_html_adjusted(file_path, output_html)
-
-output_html  # Caminho do HTML gerado para verificação
+if __name__ == "__main__":
+    # Defina o caminho correto para o arquivo SARIF e o nome de saída desejado
+    sarif_to_html("results/javascript.sarif", "relatorio_vulnerabilidades.html")
