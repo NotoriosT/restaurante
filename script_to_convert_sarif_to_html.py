@@ -121,7 +121,7 @@ def sarif_to_html(sarif_file, output_html):
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
             
-            # Ajuste para garantir que a severidade seja corretamente capturada
+            # Captura a severidade, se disponível, ou define como 'low' por padrão
             severity = result.get('properties', {}).get('securitySeverityLevel', 'low').lower()
 
             # Captura descrição da regra e outros dados relevantes
@@ -131,11 +131,13 @@ def sarif_to_html(sarif_file, output_html):
                 recommendation = matching_rule.get('properties', {}).get('securityStandards', [])
                 references = matching_rule.get('properties', {}).get('references', [])
                 cwe_id = matching_rule.get('properties', {}).get('cwe', 'N/A')
+                possible_fixes = matching_rule.get('properties', {}).get('fixes', [])
             else:
                 rule_desc = 'No description available'
                 recommendation = []
                 references = []
                 cwe_id = 'N/A'
+                possible_fixes = []
 
             # Gera o HTML para a vulnerabilidade
             code_snippet = get_code_snippet(file_path, line_number)
@@ -151,6 +153,7 @@ def sarif_to_html(sarif_file, output_html):
                 <pre>{code_snippet}</pre>
                 <p><strong>Recommendation:</strong> {', '.join(recommendation) if recommendation else 'No recommendation available'}</p>
                 <p><strong>References:</strong> {', '.join(references) if references else 'No references available'}</p>
+                <p><strong>Possible Fixes:</strong> {', '.join(possible_fixes) if possible_fixes else 'No fixes available'}</p>
             </div>
             """
 
@@ -178,5 +181,4 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     return "".join(snippet)
 
 if __name__ == "__main__":
-    # Defina o caminho correto para o arquivo SARIF e o nome de saída desejado
-    sarif_to_html("results/javascript.sarif", "relatorio_vulnerabilidades.html")
+    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
