@@ -121,11 +121,12 @@ def sarif_to_html(sarif_file, output_html):
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
             
-            # Captura a severidade, se disponível, ou define como 'low' por padrão
+            # Ajuste manual para mapear severidade corretamente
             severity = result.get('properties', {}).get('securitySeverityLevel', 'low').lower()
-
-            # Captura descrição da regra e outros dados relevantes
-            matching_rule = next((rule for rule in run.get('tool', {}).get('driver', {}).get('rules', []) if rule.get('id') == rule_id), None)
+                
+            # Captura descrição da regra e recomendações
+            rules = run.get('tool', {}).get('driver', {}).get('rules', [])
+            matching_rule = next((rule for rule in rules if rule.get('id') == rule_id), None)
             if matching_rule:
                 rule_desc = matching_rule.get('fullDescription', {}).get('text', 'No description available')
                 recommendation = matching_rule.get('properties', {}).get('securityStandards', [])
