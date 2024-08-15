@@ -55,7 +55,6 @@ def sarif_to_html(sarif_file, output_html):
             file_path = location.get('artifactLocation', {}).get('uri', 'Unknown file')
             line_number = location.get('region', {}).get('startLine', 'Unknown line')
 
-            # Obter o snippet de código vulnerável
             code_snippet = get_code_snippet(file_path, line_number)
             
             html_content += f"""
@@ -76,9 +75,6 @@ def sarif_to_html(sarif_file, output_html):
     return html_content
 
 def get_code_snippet(file_path, line_number, context_lines=2):
-    """
-    Função para obter o snippet de código ao redor da linha vulnerável.
-    """
     snippet = []
     try:
         if os.path.exists(file_path):
@@ -95,33 +91,26 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     return "".join(snippet)
 
 def send_email(subject, body, from_email, to_email, smtp_server, smtp_port, smtp_user, smtp_password):
-    """
-    Função para enviar o email com o relatório em HTML.
-    """
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = from_email
     msg['To'] = to_email
 
-    # Adicionar o corpo do email
     part1 = MIMEText(body, 'html')
     msg.attach(part1)
 
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        server.sendmail(from_email, to_email, msg.as_string())
-        server.quit()
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(from_email, to_email, msg.as_string())
         print(f"Email enviado com sucesso para {to_email}")
     except Exception as e:
         print(f"Falha ao enviar email: {e}")
 
 if __name__ == "__main__":
-    # Gera o relatório de vulnerabilidades
     html_report = sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
     
-    # Configurações de envio de email
     SMTP_SERVER = os.getenv("SMTP_SERVER")
     SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
     SMTP_USERNAME = os.getenv("SMTP_USERNAME")
@@ -129,5 +118,4 @@ if __name__ == "__main__":
     EMAIL_FROM = os.getenv("EMAIL_FROM")
     EMAIL_TO = os.getenv("EMAIL_TO")
 
-    # Envia o email com o relatório
     send_email("Vulnerability Report", html_report, EMAIL_FROM, EMAIL_TO, SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD)
