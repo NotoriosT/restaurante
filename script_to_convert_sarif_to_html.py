@@ -1,6 +1,9 @@
+import json  # Adicione esta linha para importar o módulo json
+from sarif_om import SarifLog
+
 def sarif_to_html(sarif_file, output_html):
     with open(sarif_file, "r") as file:
-        sarif_data = json.load(file)
+        sarif_data = json.load(file)  # Agora o json.load() funcionará corretamente
         sarif_log = SarifLog.from_dict(sarif_data)
         
     html_content = "<html><body><h1>Vulnerability Report</h1>"
