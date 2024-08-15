@@ -195,4 +195,4 @@ def get_code_snippet(file_path, line_number, context_lines=2):
 
 if __name__ == "__main__":
     # Certifique-se de fornecer o caminho correto para o arquivo SARIF
-    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades_completo.html")
+    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
