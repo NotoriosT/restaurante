@@ -123,7 +123,6 @@ def sarif_to_html(sarif_file, output_html):
         tool_version = tool_info.get('version', 'N/A')
         tool_full_name = tool_info.get('fullName', 'N/A')
         
-        artifacts = run.get('artifacts', [])
         conversion = run.get('conversion', {})
 
         for result in run.get('results', []):
@@ -189,16 +188,7 @@ def sarif_to_html(sarif_file, output_html):
                 </div>
                 """
 
-        # Adiciona informações sobre artifacts e conversion
-        for artifact in artifacts:
-            html_content += f"""
-            <div class="artifact">
-                <h2>Artifact Details</h2>
-                <p><strong>Location:</strong> {artifact.get('location', {}).get('uri', 'N/A')}</p>
-                <p><strong>Mime Type:</strong> {artifact.get('mimeType', 'N/A')}</p>
-            </div>
-            """
-
+        # Adiciona informações sobre conversion, se disponível
         if conversion:
             html_content += f"""
             <div class="conversion">
