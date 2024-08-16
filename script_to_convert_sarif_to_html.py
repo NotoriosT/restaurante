@@ -147,6 +147,9 @@ def sarif_to_html(sarif_file, output_html):
                 precision = matching_rule.get('precision', 'N/A')
                 security_severity_level = matching_rule.get('properties', {}).get('security-severity', 'N/A')
                 rule_properties = matching_rule.get('properties', {})
+                # Extraí o texto ou markdown detalhado
+                detailed_text = matching_rule.get('help', {}).get('text', 'N/A')
+                detailed_markdown = matching_rule.get('help', {}).get('markdown', 'N/A')
             else:
                 rule_name = "N/A"
                 short_description = "N/A"
@@ -155,6 +158,8 @@ def sarif_to_html(sarif_file, output_html):
                 precision = "N/A"
                 security_severity_level = "N/A"
                 rule_properties = {}
+                detailed_text = "N/A"
+                detailed_markdown = "N/A"
 
             # Gera o HTML para a vulnerabilidade
             for location in locations:
@@ -179,6 +184,9 @@ def sarif_to_html(sarif_file, output_html):
                     <p><strong>Security Severity Level:</strong> {security_severity_level}</p>
                     <pre>{code_snippet}</pre>
                     <p><strong>Help URI:</strong> <a href="{help_uri}">See Documentation</a></p>
+                    <p><strong>Detailed Text:</strong> {detailed_text}</p>
+                    <p><strong>Detailed Markdown:</strong></p>
+                    <pre>{detailed_markdown}</pre>
                 </div>
                 """
 
