@@ -123,6 +123,10 @@ def sarif_to_html(sarif_file, output_html):
         tool_version = tool_info.get('version', 'N/A')
         tool_full_name = tool_info.get('fullName', 'N/A')
         
+        invocations = run.get('invocations', [])
+        artifacts = run.get('artifacts', [])
+        conversion = run.get('conversion', {})
+
         for result in run.get('results', []):
             rule_id = result.get('ruleId', 'N/A')
             message = result.get('message', {}).get('text', 'No message provided')
@@ -177,6 +181,36 @@ def sarif_to_html(sarif_file, output_html):
                     <p><strong>Help URI:</strong> <a href="{help_uri}">See Documentation</a></p>
                 </div>
                 """
+
+        # Adiciona informações sobre invocations, artifacts e conversion
+        for invocation in invocations:
+            html_content += f"""
+            <div class="invocation">
+                <h2>Invocation Details</h2>
+                <p><strong>Command Line:</strong> {invocation.get('commandLine', 'N/A')}</p>
+                <p><strong>Execution Successful:</strong> {invocation.get('executionSuccessful', 'N/A')}</p>
+                <p><strong>Start Time:</strong> {invocation.get('startTimeUtc', 'N/A')}</p>
+                <p><strong>End Time:</strong> {invocation.get('endTimeUtc', 'N/A')}</p>
+            </div>
+            """
+
+        for artifact in artifacts:
+            html_content += f"""
+            <div class="artifact">
+                <h2>Artifact Details</h2>
+                <p><strong>Location:</strong> {artifact.get('location', {}).get('uri', 'N/A')}</p>
+                <p><strong>Mime Type:</strong> {artifact.get('mimeType', 'N/A')}</p>
+            </div>
+            """
+
+        if conversion:
+            html_content += f"""
+            <div class="conversion">
+                <h2>Conversion Details</h2>
+                <p><strong>Tool:</strong> {conversion.get('tool', {}).get('driver', {}).get('name', 'N/A')}</p>
+                <p><strong>Invocation:</strong> {conversion.get('invocation', {}).get('commandLine', 'N/A')}</p>
+            </div>
+            """
 
     html_content += "</body></html>"
 
