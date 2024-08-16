@@ -134,7 +134,7 @@ def sarif_to_html(sarif_file, output_html):
             additional_properties = result.get('properties', {})
             
             # Tentar encontrar a regra correspondente
-            matching_rule = next((rule for rule in tool_info.get('rules', []) if rule.get('id') == rule_id), None)
+            matching_rule = next((rule for rule in run.get('tool', {}).get('extensions', [{}])[0].get('rules', []) if rule.get('id') == rule_id), None)
             if matching_rule:
                 rule_name = matching_rule.get('name', 'N/A')
                 short_description = matching_rule.get('shortDescription', {}).get('text', 'N/A')
