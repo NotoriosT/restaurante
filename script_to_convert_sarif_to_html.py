@@ -123,7 +123,6 @@ def sarif_to_html(sarif_file, output_html):
         tool_version = tool_info.get('version', 'N/A')
         tool_full_name = tool_info.get('fullName', 'N/A')
         
-        invocations = run.get('invocations', [])
         artifacts = run.get('artifacts', [])
         conversion = run.get('conversion', {})
 
@@ -190,18 +189,7 @@ def sarif_to_html(sarif_file, output_html):
                 </div>
                 """
 
-        # Adiciona informações sobre invocations, artifacts e conversion
-        for invocation in invocations:
-            html_content += f"""
-            <div class="invocation">
-                <h2>Invocation Details</h2>
-                <p><strong>Command Line:</strong> {invocation.get('commandLine', 'N/A')}</p>
-                <p><strong>Execution Successful:</strong> {invocation.get('executionSuccessful', 'N/A')}</p>
-                <p><strong>Start Time:</strong> {invocation.get('startTimeUtc', 'N/A')}</p>
-                <p><strong>End Time:</strong> {invocation.get('endTimeUtc', 'N/A')}</p>
-            </div>
-            """
-
+        # Adiciona informações sobre artifacts e conversion
         for artifact in artifacts:
             html_content += f"""
             <div class="artifact">
