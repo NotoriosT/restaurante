@@ -202,5 +202,4 @@ def get_code_snippet(file_path, line_number, context_lines=2):
     return "".join(snippet)
 
 if __name__ == "__main__":
-    # Mantenha o caminho original
-    sarif_to_html("results/java.sarif", "relatorio_vulnerabilidades.html")
+    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
