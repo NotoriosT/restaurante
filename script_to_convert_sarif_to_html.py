@@ -127,10 +127,18 @@ def sarif_to_html(sarif_file, output_html):
             message = result.get('message', {}).get('text', 'No message provided')
             locations = [{
                 "file_path": loc.get('physicalLocation', {}).get('artifactLocation', {}).get('uri', 'Unknown file'),
-                "line_number": loc.get('physicalLocation', {}).get('region', {}).get('startLine', 'Unknown line')
+                "line_number": loc.get('physicalLocation', {}).get('region', {}).get('startLine', 'Unknown line'),
+                "column_number": loc.get('physicalLocation', {}).get('region', {}).get('startColumn', 'Unknown column'),
+                "end_line": loc.get('physicalLocation', {}).get('region', {}).get('endLine', 'Unknown end line'),
+                "end_column": loc.get('physicalLocation', {}).get('region', {}).get('endColumn', 'Unknown end column')
             } for loc in result.get('locations', [])]
             severity = result.get('properties', {}).get('securitySeverityLevel', 'low')
             additional_properties = result.get('properties', {})
+            related_locations = result.get('relatedLocations', [])
+            partial_fingerprints = result.get('partialFingerprints', {})
+            stacks = result.get('stacks', [])
+            code_flows = result.get('codeFlows', [])
+            graphs = result.get('graphs', [])
             
             # Tentar encontrar a regra correspondente
             matching_rule = next((rule for rule in tool_info.get('rules', []) if rule.get('id') == rule_id), None)
@@ -151,6 +159,9 @@ def sarif_to_html(sarif_file, output_html):
             for location in locations:
                 file_path = location['file_path']
                 line_number = location['line_number']
+                column_number = location['column_number']
+                end_line = location['end_line']
+                end_column = location['end_column']
                 code_snippet = get_code_snippet(file_path, line_number)
                 
                 html_content += f"""
@@ -163,6 +174,14 @@ def sarif_to_html(sarif_file, output_html):
                     <p><strong>Full Description:</strong> {full_description}</p>
                     <p><strong>File:</strong> {file_path}</p>
                     <p><strong>Line:</strong> {line_number}</p>
+                    <p><strong>Column:</strong> {column_number}</p>
+                    <p><strong>End Line:</strong> {end_line}</p>
+                    <p><strong>End Column:</strong> {end_column}</p>
+                    <p><strong>Related Locations:</strong> {related_locations}</p>
+                    <p><strong>Partial Fingerprints:</strong> {partial_fingerprints}</p>
+                    <p><strong>Stacks:</strong> {stacks}</p>
+                    <p><strong>Code Flows:</strong> {code_flows}</p>
+                    <p><strong>Graphs:</strong> {graphs}</p>
                     <p><strong>Additional Properties:</strong> {additional_properties}</p>
                     <p><strong>Rule Properties:</strong> {rule_properties}</p>
                     <pre>{code_snippet}</pre>
@@ -195,4 +214,4 @@ def get_code_snippet(file_path, line_number, context_lines=2):
 
 if __name__ == "__main__":
     # Certifique-se de fornecer o caminho correto para o arquivo SARIF
-    sarif_to_html("results/java.sarif/java.sarif", "relatorio_vulnerabilidades.html")
+    sarif_to_html("/mnt/data/java.sarif", "/mnt/data/relatorio_vulnerabilidades.html")
