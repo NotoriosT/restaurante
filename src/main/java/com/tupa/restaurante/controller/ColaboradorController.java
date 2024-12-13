@@ -4,7 +4,7 @@ import com.tupa.restaurante.entidades.Colaborador;
 import com.tupa.restaurante.services.ColaboradorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -17,16 +17,7 @@ public class ColaboradorController {
     @Autowired
     private ColaboradorService colaboradorService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
-    @PostMapping
-    public ResponseEntity<Colaborador> createColaborador(@Valid @RequestBody Colaborador colaborador) {
-        // Criptografar a senha antes de salvar
-        colaborador.setSenha(passwordEncoder.encode(colaborador.getSenha()));
-        Colaborador newColaborador = colaboradorService.saveColaborador(colaborador);
-        return ResponseEntity.ok(newColaborador);
-    }
 
     @GetMapping
     public ResponseEntity<List<Colaborador>> getAllColaboradores() {

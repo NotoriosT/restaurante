@@ -1,7 +1,7 @@
 package com.tupa.restaurante.entidades;
 
 public enum Status {
-    PEDENTE,
+    PENDENTE,
     PREPARANDO,
     PRONTO
 

@@ -15,11 +15,11 @@ public class Pedido {
     @Id
     private String id;
 
-    @NotNull(message = "O ID da mesa é obrigatório")
-    private int mesaId;
-
     @NotEmpty(message = "A lista de produtos não pode estar vazia")
     private List<ProdutoPedido> produtos;
+
+    @NotEmpty(message = "O ID da conta é obrigatório")
+    private String idConta;
 
     private String observacao;
 

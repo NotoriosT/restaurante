@@ -7,6 +7,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface PedidoRepository extends MongoRepository<Pedido, String> {
-    List<Pedido> findByMesaId(int mesaId);
-    List<Pedido> findByStatusIn(List<Status> statuses);
+
+    List<Pedido> findByIdConta(String idConta);
 }
