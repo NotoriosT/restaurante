@@ -1,10 +1,9 @@
 package com.tupa.restaurante.controller;
 
-import com.tupa.restaurante.entidades.Pedido;
-import com.tupa.restaurante.entidades.Status;
-import com.tupa.restaurante.repository.PedidoRepository;
+import com.tupa.restaurante.dto.PedidoDTORetorno;
+import com.tupa.restaurante.services.PedidoService;
+import com.tupa.restaurante.services.ServicoWebSocketPedido;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,4 +12,36 @@ import java.util.List;
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
+    @Autowired
+    private PedidoService pedidoService;
+
+    @Autowired
+    private ServicoWebSocketPedido servicoWebSocketPedido;
+
+    /**
+     * Endpoint para obter todos os pedidos.
+     *
+     * @return Lista de todos os pedidos.
+     */
+    @GetMapping
+    public List<PedidoDTORetorno> getAllPedidos() {
+        return pedidoService.getAllPedidos();
+    }
+
+    /**
+     * Endpoint para avançar o estado de um pedido.
+     *
+     * @param idPedido ID do pedido.
+     * @return Pedido atualizado.
+     */
+    @PutMapping("/{idPedido}/avancar")
+    public PedidoDTORetorno avancarEstadoPedido(@PathVariable String idPedido) {
+        PedidoDTORetorno pedidoAtualizado = pedidoService.avancarEstadoPedido(idPedido);
+
+        // Enviar a lista atualizada para a cozinha via WebSocket
+        List<PedidoDTORetorno> listaPedidosAtualizada = pedidoService.getAllPedidos();
+        servicoWebSocketPedido.enviarPedidosAtualizadosParaCozinha(listaPedidosAtualizada);
+
+        return pedidoAtualizado;
+    }
 }

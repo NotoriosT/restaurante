@@ -19,6 +19,7 @@ public class Conta {
     private LocalDateTime dataFechamento;
     private StatusConta status;// ABERTA, FECHADA
     private String idCliente;
+    private String idFechamento;
 
     // Opcional: armazenar total se desejar persistir após fechamento
     private double total;

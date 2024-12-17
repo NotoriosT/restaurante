@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ContaService {
@@ -21,6 +22,8 @@ public class ContaService {
 
     @Autowired
     private PedidoRepository pedidoRepository;
+    @Autowired
+   private FechamentoService fechamentoService;
 
     public Conta abrirConta(String idMesa) {
         // Verifica se a mesa existe
@@ -37,7 +40,8 @@ public class ContaService {
         conta.setIdMesa(idMesa);
         conta.setDataAbertura(LocalDateTime.now());
         conta.setStatus(StatusConta.ABERTA);
-
+      Optional<Fechamento>fechamento= fechamentoService.obterFechamentoAberto();
+        fechamento.ifPresent(value -> conta.setIdFechamento(value.getId()));
         // Atualiza o status da mesa para OCUPADA (por exemplo)
         mesa.setStatus(StatusMesa.OCUPADO);
         mesaRepository.save(mesa);

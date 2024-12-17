@@ -9,4 +9,5 @@ import java.util.List;
 public interface PedidoRepository extends MongoRepository<Pedido, String> {
 
     List<Pedido> findByIdConta(String idConta);
+    List<Pedido> findByIdContaIn(List<String> idContas);
 }
