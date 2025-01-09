@@ -27,6 +27,7 @@ public class Mesa {
 
     @NotNull(message = "Status é obrigatório")
     private StatusMesa status;
+    private String idContaAtual;
 
 
 

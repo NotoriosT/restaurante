@@ -3,14 +3,17 @@ package com.tupa.restaurante.controller;
 import com.tupa.restaurante.dto.PedidoDTORetorno;
 import com.tupa.restaurante.entidades.Conta;
 import com.tupa.restaurante.entidades.Pedido;
+import com.tupa.restaurante.exeptions.ClienteNaoEncontradoException;
 import com.tupa.restaurante.services.ContaService;
 import com.tupa.restaurante.services.PedidoService;
 import com.tupa.restaurante.services.ServicoWebSocketPedido;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/contas")
 public class ContaController {
@@ -24,64 +27,58 @@ public class ContaController {
     @Autowired
     private PedidoService pedidoService;
 
-    /**
-     * Abre uma nova conta para uma mesa específica.
-     *
-     * @param mesaId O ID da mesa.
-     * @return A conta criada.
-     */
+    // ------------------------------------------------------------
+    // Abertura de conta:
     @PostMapping("/abrir/{mesaId}")
-    public Conta abrirConta(@PathVariable String mesaId) {
-        return contaService.abrirConta(mesaId);
+    public ResponseEntity<Conta> abrirConta(@PathVariable String mesaId, @RequestParam String idCliente) {
+        try {
+            Conta conta = contaService.abrirConta(mesaId, idCliente);
+            return ResponseEntity.ok(conta);
+        } catch (ClienteNaoEncontradoException e) {
+            // Trate apropriadamente
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            // Tratar outras exceções
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    /**
-     * Cria um novo pedido para uma conta específica, retorna o DTO do pedido e notifica a cozinha via WebSocket.
-     *
-     * @param contaId    O ID da conta.
-     * @param novoPedido O novo pedido a ser criado.
-     * @return O DTO do pedido criado.
-     */
+    // ------------------------------------------------------------
+    // Criar pedido na conta:
     @PostMapping("/{contaId}/pedidos")
     public PedidoDTORetorno criarPedido(@PathVariable String contaId, @RequestBody Pedido novoPedido) {
+        novoPedido.setDataPedido(LocalDateTime.now());
         Pedido pedidoCriado = contaService.criarPedido(contaId, novoPedido);
+
         // Recupera a lista atualizada de pedidos como DTOs
         List<PedidoDTORetorno> listaPedidosAtualizada = pedidoService.getAllPedidos();
+
         // Envia a lista atualizada para a cozinha via WebSocket
         servicoWebSocketPedido.enviarPedidosAtualizadosParaCozinha(listaPedidosAtualizada);
+
         // Retorna o DTO do pedido criado
         return pedidoService.convertToPedidoDTO(pedidoCriado);
     }
 
-    /**
-     * Fecha uma conta específica e retorna o valor total.
-     *
-     * @param contaId O ID da conta.
-     * @return O valor total da conta.
-     */
+    // ------------------------------------------------------------
+    // Fechar conta:
     @PostMapping("/{contaId}/fechar")
-    public double fecharConta(@PathVariable String contaId) {
+    public BigDecimal fecharConta(@PathVariable String contaId) {
         return contaService.fecharConta(contaId);
     }
 
-    /**
-     * Recupera todas as contas abertas.
-     *
-     * @return Uma lista de todas as contas.
-     */
+    // ------------------------------------------------------------
+    // Listar todas as contas abertas:
     @GetMapping
     public List<Conta> obterTodasContas() {
         return contaService.getAllContas();
     }
 
-    /**
-     * Recupera todas as contas associadas a uma mesa específica.
-     *
-     * @param mesaId O ID da mesa.
-     * @return Uma lista de contas associadas à mesa.
-     */
+    // ------------------------------------------------------------
+    // Listar contas de uma mesa específica:
     @GetMapping("/mesa/{mesaId}")
     public List<Conta> obterContasPorMesaId(@PathVariable String mesaId) {
         return contaService.getContasByMesaId(mesaId);
     }
-}
+
+} // <-- observe que a classe termina aqui, sem nada 'solto' depois

@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -22,5 +23,5 @@ public class Conta {
     private String idFechamento;
 
     // Opcional: armazenar total se desejar persistir após fechamento
-    private double total;
+    private BigDecimal total;
 }

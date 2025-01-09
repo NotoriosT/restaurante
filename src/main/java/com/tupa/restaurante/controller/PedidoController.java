@@ -4,6 +4,10 @@ import com.tupa.restaurante.dto.PedidoDTORetorno;
 import com.tupa.restaurante.services.PedidoService;
 import com.tupa.restaurante.services.ServicoWebSocketPedido;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +28,7 @@ public class PedidoController {
      * @return Lista de todos os pedidos.
      */
     @GetMapping
+
     public List<PedidoDTORetorno> getAllPedidos() {
         return pedidoService.getAllPedidos();
     }
@@ -35,6 +40,7 @@ public class PedidoController {
      * @return Pedido atualizado.
      */
     @PutMapping("/{idPedido}/avancar")
+    @PreAuthorize("hasAnyRole('COZINHA', 'GERENTE')")
     public PedidoDTORetorno avancarEstadoPedido(@PathVariable String idPedido) {
         PedidoDTORetorno pedidoAtualizado = pedidoService.avancarEstadoPedido(idPedido);
 
@@ -43,5 +49,35 @@ public class PedidoController {
         servicoWebSocketPedido.enviarPedidosAtualizadosParaCozinha(listaPedidosAtualizada);
 
         return pedidoAtualizado;
+    }
+
+    /**
+     * Endpoint para cancelar uma quantidade específica de um produto dentro de um pedido.
+     *
+     * @param idPedido        ID do pedido.
+     * @param idProdutoPedido ID do ProdutoPedido dentro do pedido.
+     * @param quantidade      Quantidade a ser cancelada.
+     * @param motivo          Motivo do cancelamento (opcional).
+     * @return Pedido atualizado como DTO.
+     */
+    @PutMapping("/{idPedido}/cancelar-produto")
+    @PreAuthorize("hasAnyRole('COZINHA', 'GERENTE')") // Ajuste os roles conforme sua aplicação
+    public PedidoDTORetorno cancelarProdutoNoPedido(
+            @PathVariable String idPedido,
+            @RequestParam String idProdutoPedido,
+            @RequestParam int quantidade,
+            @RequestParam(required = false) String motivo) {
+
+        // Obter o usuário autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String usuarioAtual = authentication.getName();
+
+        return pedidoService.cancelarProdutoNoPedido(idPedido, idProdutoPedido, quantidade, usuarioAtual, motivo);
+    }
+    @GetMapping("/conta/{idConta}")
+
+    public ResponseEntity<List<PedidoDTORetorno>> getPedidosByConta(@PathVariable String idConta) {
+        List<PedidoDTORetorno> pedidos = pedidoService.getPedidosByContaId(idConta);
+        return ResponseEntity.ok(pedidos);
     }
 }
