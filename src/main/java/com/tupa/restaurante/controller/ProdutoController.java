@@ -1,6 +1,6 @@
 package com.tupa.restaurante.controller;
 
-import com.tupa.restaurante.entidades.Produto;
+import com.tupa.restaurante.entities.Produto;
 import com.tupa.restaurante.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

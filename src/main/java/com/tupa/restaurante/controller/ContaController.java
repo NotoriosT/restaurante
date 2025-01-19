@@ -1,84 +1,84 @@
 package com.tupa.restaurante.controller;
 
 import com.tupa.restaurante.dto.PedidoDTORetorno;
-import com.tupa.restaurante.entidades.Conta;
-import com.tupa.restaurante.entidades.Pedido;
-import com.tupa.restaurante.exeptions.ClienteNaoEncontradoException;
-import com.tupa.restaurante.services.ContaService;
-import com.tupa.restaurante.services.PedidoService;
-import com.tupa.restaurante.services.ServicoWebSocketPedido;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tupa.restaurante.entities.Conta;
+import com.tupa.restaurante.entities.Pedido;
+import com.tupa.restaurante.exceptions.ClienteNaoEncontradoException;
+import com.tupa.restaurante.service.ContaService;
+import com.tupa.restaurante.service.PedidoService;
+import com.tupa.restaurante.service.ServicoWebSocketPedido;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/contas")
 public class ContaController {
 
-    @Autowired
-    private ContaService contaService;
+    private final ContaService contaService;
+    private final ServicoWebSocketPedido servicoWebSocketPedido;
+    private final PedidoService pedidoService;
 
-    @Autowired
-    private ServicoWebSocketPedido servicoWebSocketPedido;
+    public ContaController(ContaService contaService, ServicoWebSocketPedido servicoWebSocketPedido, PedidoService pedidoService) {
+        this.contaService = contaService;
+        this.servicoWebSocketPedido = servicoWebSocketPedido;
+        this.pedidoService = pedidoService;
+    }
 
-    @Autowired
-    private PedidoService pedidoService;
-
-    // ------------------------------------------------------------
-    // Abertura de conta:
     @PostMapping("/abrir/{mesaId}")
     public ResponseEntity<Conta> abrirConta(@PathVariable String mesaId, @RequestParam String idCliente) {
         try {
             Conta conta = contaService.abrirConta(mesaId, idCliente);
             return ResponseEntity.ok(conta);
-        } catch (ClienteNaoEncontradoException e) {
-            // Trate apropriadamente
+        } catch (ClienteNaoEncontradoException | IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            // Tratar outras exceções
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    // ------------------------------------------------------------
-    // Criar pedido na conta:
     @PostMapping("/{contaId}/pedidos")
-    public PedidoDTORetorno criarPedido(@PathVariable String contaId, @RequestBody Pedido novoPedido) {
-        novoPedido.setDataPedido(LocalDateTime.now());
-        Pedido pedidoCriado = contaService.criarPedido(contaId, novoPedido);
+    public ResponseEntity<PedidoDTORetorno> criarPedido(@PathVariable String contaId, @RequestBody Pedido novoPedido) {
+        try {
+            novoPedido.setDataPedido(LocalDateTime.now());
+            Pedido pedidoCriado = contaService.criarPedido(contaId, novoPedido);
 
-        // Recupera a lista atualizada de pedidos como DTOs
-        List<PedidoDTORetorno> listaPedidosAtualizada = pedidoService.getAllPedidos();
+            List<PedidoDTORetorno> listaPedidosAtualizada = pedidoService.getAllPedidos();
+            servicoWebSocketPedido.enviarPedidosAtualizadosParaCozinha(listaPedidosAtualizada);
 
-        // Envia a lista atualizada para a cozinha via WebSocket
-        servicoWebSocketPedido.enviarPedidosAtualizadosParaCozinha(listaPedidosAtualizada);
-
-        // Retorna o DTO do pedido criado
-        return pedidoService.convertToPedidoDTO(pedidoCriado);
+            PedidoDTORetorno pedidoDTO = pedidoService.convertToPedidoDTO(pedidoCriado);
+            return ResponseEntity.ok(pedidoDTO);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    // ------------------------------------------------------------
-    // Fechar conta:
     @PostMapping("/{contaId}/fechar")
-    public BigDecimal fecharConta(@PathVariable String contaId) {
-        return contaService.fecharConta(contaId);
+    public ResponseEntity<BigDecimal> fecharConta(@PathVariable String contaId) {
+        try {
+            BigDecimal total = contaService.fecharConta(contaId);
+            return ResponseEntity.ok(total);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    // ------------------------------------------------------------
-    // Listar todas as contas abertas:
     @GetMapping
-    public List<Conta> obterTodasContas() {
-        return contaService.getAllContas();
+    public ResponseEntity<List<Conta>> obterTodasContas() {
+        List<Conta> contas = contaService.getAllContas();
+        return ResponseEntity.ok(contas);
     }
 
-    // ------------------------------------------------------------
-    // Listar contas de uma mesa específica:
     @GetMapping("/mesa/{mesaId}")
-    public List<Conta> obterContasPorMesaId(@PathVariable String mesaId) {
-        return contaService.getContasByMesaId(mesaId);
+    public ResponseEntity<List<Conta>> obterContasPorMesaId(@PathVariable String mesaId) {
+        List<Conta> contas = contaService.getContasByMesaId(mesaId);
+        return ResponseEntity.ok(contas);
     }
-
-} // <-- observe que a classe termina aqui, sem nada 'solto' depois
+}

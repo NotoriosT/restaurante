@@ -1,9 +1,7 @@
 package com.tupa.restaurante.dto;
 
-import com.tupa.restaurante.entidades.CancelamentoProdutoPedido;
-import com.tupa.restaurante.entidades.Produto;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import com.tupa.restaurante.entities.CancelamentoProdutoPedido;
+import com.tupa.restaurante.entities.Produto;
 import lombok.Getter;
 import lombok.Setter;
 

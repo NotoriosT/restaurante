@@ -1,8 +1,8 @@
 package com.tupa.restaurante.controller;
 
 import com.tupa.restaurante.dto.PedidoDTORetorno;
-import com.tupa.restaurante.services.PedidoService;
-import com.tupa.restaurante.services.ServicoWebSocketPedido;
+import com.tupa.restaurante.service.PedidoService;
+import com.tupa.restaurante.service.ServicoWebSocketPedido;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

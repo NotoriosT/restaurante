@@ -2,7 +2,7 @@
 
 package com.tupa.restaurante.repository;
 
-import com.tupa.restaurante.entidades.Colaborador;
+import com.tupa.restaurante.entities.Colaborador;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 

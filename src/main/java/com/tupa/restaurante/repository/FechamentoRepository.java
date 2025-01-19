@@ -1,7 +1,7 @@
 package com.tupa.restaurante.repository;
 
-import com.tupa.restaurante.entidades.Fechamento;
-import com.tupa.restaurante.entidades.StatusFechamento;
+import com.tupa.restaurante.entities.Fechamento;
+import com.tupa.restaurante.entities.enums.StatusFechamento;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

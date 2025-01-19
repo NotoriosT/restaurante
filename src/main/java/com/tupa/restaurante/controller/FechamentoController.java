@@ -1,13 +1,12 @@
 package com.tupa.restaurante.controller;
 
-import com.tupa.restaurante.entidades.Fechamento;
-import com.tupa.restaurante.entidades.Mesa;
-import com.tupa.restaurante.services.FechamentoService;
+import com.tupa.restaurante.entities.Fechamento;
+import com.tupa.restaurante.entities.Mesa;
+import com.tupa.restaurante.service.FechamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
 @RestController

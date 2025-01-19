@@ -1,13 +1,11 @@
 package com.tupa.restaurante.dto;
 
-import com.tupa.restaurante.entidades.CancelamentoProdutoPedido;
-import com.tupa.restaurante.entidades.ProdutoPedido;
+import com.tupa.restaurante.entities.CancelamentoProdutoPedido;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal; // Import necessário
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
